@@ -29,7 +29,6 @@ int main() {
   //Main =========================================
   setBrakeMode(hold);
 
-
   // opcontrol();
 
   competition comp;
