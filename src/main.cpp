@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
-/*    Author:       C:\Users\brune                                            */
+/*    Author:       Dylan Bruner                                              */
 /*    Created:      Sun Dec 04 2022                                           */
 /*    Description:  V5 project                                                */
 /*                                                                            */
@@ -35,8 +35,10 @@ int main() {
   //Main =========================================
   setBrakeMode(hold);
 
-  // turn(360, 70);
 
-  testAuton();
-  opcontrol();
+  // opcontrol();
+
+  competition comp;
+  comp.drivercontrol(opcontrol);
+  // comp.autonomous(autonomous);
 }
