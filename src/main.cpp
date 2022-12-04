@@ -30,6 +30,13 @@ void opcontrol(){
 int main() {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
+  initDrive();
 
+  //Main =========================================
+  setBrakeMode(hold);
+
+  // turn(360, 70);
+
+  testAuton();
   opcontrol();
 }

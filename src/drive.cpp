@@ -5,10 +5,10 @@ using namespace vex;
 //user editable constants
 
 //motor ports
-const int left_front = PORT12;
-const int left_rear = PORT13;
+const int left_front  = PORT12;
+const int left_rear   = PORT13;
 const int right_front = PORT15;
-const int right_rear = PORT14;
+const int right_rear  = PORT14;
 gearSetting gear_ratio = ratio18_1;
 
 //gyro port (set to 0 if not using)
@@ -16,7 +16,7 @@ const int gyro_port = 0;
 
 //distance constants
 const int distance_constant = 545; //ticks per tile
-const double degree_constant = 2.3; //ticks per degree
+const double degree_constant = 2.995; //ticks per degree
 
 /**************************************************/
 //advanced tuning (PID and slew)
