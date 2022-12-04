@@ -17,6 +17,10 @@
 
 #include "robot-config.h"
 
+#include "robot-config.h"
+#include "drive.h"
+#include "auton.h"
+
 #define waitUntil(condition)                                                   \
   do {                                                                         \
     wait(5, msec);                                                             \

@@ -18,20 +18,18 @@
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
-#include "vex_global.h"
-#include "pid-drivetrain.h"
-// #include "pid-motor.h"
 
 using namespace vex;
 
+void opcontrol(){
+  while (true){
+    tank(Controller1.Axis3.value(), Controller1.Axis2.value());
+  }
+}
 
 int main() {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
 
-  PidDriveTrain myDrive(&LeftBackMotor, &LeftFrontMotor, &RightBackMotor, &RightFrontMotor, &Inert20);
-
-  myDrive.turn(90);
-
-  Brain.Screen.printAt(10, 10, "Finished!");
+  opcontrol();
 }
