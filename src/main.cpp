@@ -21,12 +21,6 @@
 
 using namespace vex;
 
-void opcontrol(){
-  while (true){
-    tank(Controller1.Axis3.value(), Controller1.Axis2.value());
-  }
-}
-
 int main() {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
