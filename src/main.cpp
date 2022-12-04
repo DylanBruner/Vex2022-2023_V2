@@ -29,8 +29,6 @@ int main() {
   //Main =========================================
   setBrakeMode(hold);
 
-  // opcontrol();
-
   competition comp;
   comp.drivercontrol(opcontrol);
   // comp.autonomous(autonomous);
