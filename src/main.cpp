@@ -29,6 +29,11 @@ int main() {
   //Main =========================================
   setBrakeMode(hold);
 
+  turn(90);
+  drive(2);
+  turn(90);
+  drive(2);
+
   competition comp;
   comp.drivercontrol(opcontrol);
   // comp.autonomous(autonomous);
