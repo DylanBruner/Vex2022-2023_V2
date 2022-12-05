@@ -9,4 +9,5 @@ void testAuton(){
   turn(90);
   wait(1, seconds);
   drive(2);
+  wait(1, seconds);
 }

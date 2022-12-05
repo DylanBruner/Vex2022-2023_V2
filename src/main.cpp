@@ -29,10 +29,7 @@ int main() {
   //Main =========================================
   setBrakeMode(hold);
 
-  turn(90);
-  drive(2);
-  turn(90);
-  drive(2);
+  // testAuton();
 
   competition comp;
   comp.drivercontrol(opcontrol);

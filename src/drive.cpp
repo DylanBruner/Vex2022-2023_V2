@@ -18,7 +18,7 @@ const int gyro_port = 0;
 
 //distance constants
 const int distance_constant = 545; //ticks per tile
-const double degree_constant = 2.995; //ticks per degree
+const double degree_constant = 2.99; //ticks per degree
 
 /**************************************************/
 //advanced tuning (PID and slew)
