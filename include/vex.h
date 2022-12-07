@@ -21,6 +21,7 @@
 #include "drive.h"
 #include "auton.h"
 #include "drivercontrol.h"
+#include "odometry.h"
 
 #define waitUntil(condition)                                                   \
   do {                                                                         \
