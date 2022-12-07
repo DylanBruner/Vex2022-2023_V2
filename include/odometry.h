@@ -14,7 +14,11 @@ class Odometry{
         vex::encoder *L_ENCODER;
         vex::encoder *R_ENCODER;
         vex::encoder *M_ENCODER;
+        double *d1; //This is the distance between the left and right wheels
+
+        double x0 = 0;
+        double y0 = 0;
 
         Odometry(vex::encoder l_encoder, vex::encoder r_encoder,
-                 vex::encoder m_encoder);
+                 vex::encoder m_encoder, double d1);
 };
