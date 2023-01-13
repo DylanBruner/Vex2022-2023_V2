@@ -16,6 +16,10 @@ class Odometry{
         vex::encoder *M_ENCODER;
         double *d1; //This is the distance between the left and right wheels
 
+        bool FLIP_LEFT   = false;
+        bool FLIP_RIGHT  = false;
+        bool FLIP_MIDDLE = false;
+
         double x0 = 0;
         double y0 = 0;
 

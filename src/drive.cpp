@@ -7,10 +7,10 @@ using namespace vex;
 //user editable constants
 
 //motor ports
-const int left_front  = PORT12;
-const int left_rear   = PORT13;
-const int right_front = PORT15;
-const int right_rear  = PORT14;
+const int left_front  = PORT7;
+const int left_rear   = PORT8;
+const int right_front = PORT5;
+const int right_rear  = PORT6;
 gearSetting gear_ratio = ratio18_1;
 
 //gyro port (set to 0 if not using)
@@ -87,7 +87,7 @@ void setBrakeMode(brakeType b){
 void reset(){
   leftMotors.resetRotation();
   rightMotors.resetRotation();
-  setBrakeMode(coast);
+  setBrakeMode(hold);
 }
 
 int drivePos(){
