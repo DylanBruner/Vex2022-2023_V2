@@ -6,7 +6,6 @@ extern brain Brain;
 extern controller Controller1;
 extern motor_group Flywheel;
 extern digital_out LittleNut;
-extern digital_out BigNut;
 extern motor RollerAndBtmIntake;
 extern motor UpperIntake;
 

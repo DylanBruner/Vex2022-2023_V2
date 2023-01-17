@@ -4,12 +4,18 @@ class MotorPid {
     public:
         vex::motor_group *motor;
         int targetRpm = 0;
-        double maxThreshold = 25;
         void doTick();
         void setTargetRpm(int rpm);
         void setMaxThreshold(double threshold);
-        double currentVoltage = 0;
-        double lastVoltage    = -1;
+
+        //PID stuffs
+        double kP = 0.2;
+        double kI = 0.4;
+        double kD = 0.5;
+        double integral = 0;
+        double lastError = 0;
+        double sampleTime = 20;
+        double maxThreshold = 350;
 
     private:
       int tickCounter = 0;

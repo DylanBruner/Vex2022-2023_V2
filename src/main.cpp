@@ -19,25 +19,21 @@
 /*----------------------------------------------------------------------------*/
 
 #include "vex.h"
+#include <sys/types.h>
 
 using namespace vex;
 
 bool flywheelOn = false;
+bool tableMode  = false;
 
-double flywheelVoltage = 7.0;
+int flywheelRPM = 350;
 MotorPid flywheelPid;
-
-//TODO
-//Get hold mode working *better*
-//Use .pressing()
-//Splut up autons
-//Maybe work out some controller key binding class/system
 
 //Quick and ugly cause i dont know how lambda works
 void flywheelButtonPressed(){
   flywheelOn = !flywheelOn;
   if (flywheelOn){
-    Flywheel.spin(forward, flywheelVoltage, volt);
+    Flywheel.spin(forward, flywheelRPM, volt);
   } else {
     Flywheel.stop();
   }
@@ -46,23 +42,23 @@ void flywheelButtonPressed(){
 
 // Figure out how th to write lambda functions!!
 void buttonXPressed(){
-  flywheelVoltage += 0.2;
+  flywheelRPM += 10;
 }
 
 void buttonBPressed(){
-  flywheelVoltage -= 0.2;
+  flywheelRPM -= 10;
 }
 
 //Display cache
 double flywheelVoltageCache = -1;
 void displayControllerStuff(){
-  bool hasChange = false;
-  if (flywheelVoltageCache != flywheelVoltage){
-    flywheelVoltageCache = flywheelVoltage;
-    hasChange = true;
-  } else if (flywheelPid.lastVoltage != flywheelPid.currentVoltage){
-    hasChange = true;
-  }
+  bool hasChange = true;
+  // if (flywheelVoltageCache != flywheelVoltage){
+  //   flywheelVoltageCache = flywheelVoltage;
+  //   hasChange = true;
+  // } else if (flywheelPid.lastVoltage != flywheelPid.currentVoltage){
+  //   hasChange = true;
+  // }
 
   if (hasChange){
     Controller1.Screen.clearScreen();
@@ -70,100 +66,98 @@ void displayControllerStuff(){
 
     // Display voltage
     Controller1.Screen.print("Voltage: ");
-    Controller1.Screen.print(flywheelVoltage);
+    Controller1.Screen.print(flywheelRPM);
     Controller1.Screen.setCursor(2, 1);
     Controller1.Screen.print("Flywheel: ");
-    Controller1.Screen.print(flywheelPid.currentVoltage);
+    // Controller1.Screen.print((int) flywheelPid.currentVoltage);
   }
 }
 
 void wpAuton(){
-  // Do Roller =================================
-  drive(-0.15);
-  UpperIntake.setVelocity(100, percent);
-  UpperIntake.spinFor(forward, -65, degrees);
-
-  // Shoot Disk - align with goal
-  Flywheel.setVelocity(100, percent);
-  // Flywheel.spin(forward, 7.85, volt);
-  Flywheel.spin(forward, 6, volt);
-  drive(0.20);
-
-  // turn(20); - High Goal
-  turn(-90);
-
-  //Shoot disk - shoot disk
-  wait(2, seconds);
-  UpperIntake.setVelocity(50, percent);
-  RollerAndBtmIntake.setVelocity(50, percent);
-  UpperIntake.spin(forward);
-  RollerAndBtmIntake.spin(forward);
-
-  //After first shoots give flywheel time to spin up for second
-  wait(2.2, seconds);
-  // Flywheel.spin(forward, 9, volt);
-  Flywheel.spin(forward, 7, volt); //Low goal
-
-
-  //Shoot second
-  RollerAndBtmIntake.spin(forward);
-  UpperIntake.spin(forward);
-
-  wait(5, seconds);
-
-
-  Flywheel.stop();
+  // This will get both rollers & shoot two disks into the far goal
 }
 
-void driver(){
-  // Controller1.ButtonR1.pressed(flywheelButtonPressed);
-  Controller1.ButtonX.pressed(buttonXPressed);
-  Controller1.ButtonB.pressed(buttonBPressed);
+void twoDisksWithRollerHigh(){
+  // This will drive forward, do the roller and then shoot two disks into the high goal
+}
 
+void twoDisksWithRollerLow(){
+  // Same thing but with low goal
+}
+
+void justRoller(){
+
+}
+
+void skillsAuton(){}
+
+void driver(){
   flywheelPid.motor = &Flywheel;
-  flywheelPid.setTargetRpm(500);
+  flywheelPid.targetRpm = flywheelRPM;
+
+  if (tableMode){
+    Controller1.Screen.clearScreen();
+    Controller1.Screen.setCursor(1, 1);
+    Controller1.Screen.print("Warning Table Mode!!");
+    Controller1.Screen.setCursor(2, 1);
+    Controller1.Screen.print("Press A + Up to exit");
+  }
 
   while (true){
-    tank(Controller1.Axis3.position(), Controller1.Axis2.position());
+    long startTime = Brain.timer(msec);
+    if (!tableMode){
+      tank(Controller1.Axis3.position(), Controller1.Axis2.position());
+    } else if (Controller1.ButtonA.pressing() && Controller1.ButtonUp.pressing()){
+      tableMode = false;
+      Controller1.rumble("-..");
+      Controller1.Screen.clearScreen();
+    }
+
+    flywheelPid.targetRpm = flywheelRPM;
 
     if (Controller1.ButtonR2.pressing()){
-      if (flywheelOn){
-        flywheelOn = false;
+      flywheelPid.setTargetRpm(flywheelRPM);
+      flywheelOn = !flywheelOn;
+      if (!flywheelOn){
         Flywheel.stop();
-      } else {
-        flywheelOn = true;
-        // Flywheel.spin(forward, flywheelVoltage, volt);
       }
 
-      wait(200, msec); 
+      wait(200, msec);
     }
 
     if (flywheelOn){
       flywheelPid.doTick();
     }
 
-    //Controller display & Voltage Control
-    displayControllerStuff();
+    // Live RPM Control
+    if (Controller1.ButtonX.pressing()){
+      flywheelRPM += 10;
+      wait(200, msec);
+    } else if (Controller1.ButtonB.pressing()){
+      flywheelRPM -= 10;
+      wait(200, msec);
+    }
+    
 
     // Intake ============================================================
     if (Controller1.ButtonL1.pressing()){
-      UpperIntake.setVelocity(100, percent);
-      UpperIntake.spin(forward);
+      // UpperIntake.setVelocity(100, percent);
+      UpperIntake.spin(forward, 12, volt);
     } else if (!Controller1.ButtonUp.pressing()) {UpperIntake.stop();}
 
     if (Controller1.ButtonL2.pressing()){
-      RollerAndBtmIntake.setVelocity(100, percent);
-      RollerAndBtmIntake.spin(forward);
+      // RollerAndBtmIntake.setVelocity(100, percent);
+      RollerAndBtmIntake.spin(forward, 12, volt);
     } else if (!Controller1.ButtonDown.pressing()){RollerAndBtmIntake.stop();}
 
     if (Controller1.ButtonUp.pressing()){
-      UpperIntake.setVelocity(100, percent);
-      UpperIntake.spin(reverse);
+      // UpperIntake.setVelocity(100, percent);
+      UpperIntake.spin(reverse, 12, volt);
     } else if (!Controller1.ButtonL1.pressing()){UpperIntake.stop();}
 
     if (Controller1.ButtonDown.pressing()){
-      RollerAndBtmIntake.setVelocity(100, percent);
-      RollerAndBtmIntake.spin(reverse);
+      // RollerAndBtmIntake.setVelocity(100, percent);
+      RollerAndBtmIntake.spin(reverse, 12, volt);
     } else if (!Controller1.ButtonL2.pressing()){RollerAndBtmIntake.stop();}
 
     // Endgame ========================================================
@@ -172,12 +166,33 @@ void driver(){
         && Controller1.ButtonUp.pressing() && Controller1.ButtonDown.pressing()
         && Controller1.ButtonLeft.pressing() && Controller1.ButtonRight.pressing()){
       LittleNut.set(true);
-      BigNut.set(true);
+    }
 
-      wait(200, msec);
-
-      BigNut.set(false);
-      LittleNut.set(false);
+    // Display ========================================================
+    double execTime = Brain.timer(msec) - startTime;
+    // Display exec time on brain
+    if (Brain.Timer.time() % 5 == 0){
+      // Brain.Screen.clearLine(1);
+      Brain.Screen.clearScreen();
+      Brain.Screen.setCursor(1, 1);
+      Brain.Screen.print("Exec Time: ");
+      Brain.Screen.print(execTime);
+      //Print flywheelRPM
+      Brain.Screen.setCursor(2, 1);
+      Brain.Screen.print("Flywheel RPM (real): ");
+      Brain.Screen.print(flywheelPid.motor->velocity(rpm));
+      Brain.Screen.setCursor(3, 1);
+      Brain.Screen.print("Flywheel RPM (target): ");
+      Brain.Screen.print(flywheelPid.targetRpm);
+      //Print the percent of the flywheel relative to the target RPM
+      Brain.Screen.setCursor(4, 1);
+      Brain.Screen.print("Flywheel Percent: ");
+      double percent = (flywheelPid.motor->velocity(rpm) / flywheelPid.targetRpm) * 100;
+      Brain.Screen.print(percent);
+      //Print the voltage of flywheel
+      Brain.Screen.setCursor(5, 1);
+      Brain.Screen.print("Flywheel Voltage: ");
+      Brain.Screen.print(flywheelPid.motor->voltage(volt));
     }
   }
 }
@@ -191,16 +206,12 @@ int main() {
   setBrakeMode(hold);
 
   LittleNut.set(false);
-  BigNut.set(false);
-
-  // driver();
-
-  // Controller1.ButtonR1.pressed(flywheelButtonPressed);
-  Controller1.ButtonX.pressed(buttonXPressed);
-  Controller1.ButtonB.pressed(buttonBPressed);
-
 
   competition comp;
   comp.drivercontrol(driver);
   comp.autonomous(wpAuton);
+
+  if (!comp.isCompetitionSwitch()){
+    tableMode = true;
+  }
 }
