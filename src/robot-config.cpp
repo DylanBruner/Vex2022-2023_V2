@@ -15,6 +15,7 @@ motor_group Flywheel = motor_group(FlywheelMotorA, FlywheelMotorB);
 digital_out LittleNut = digital_out(Brain.ThreeWirePort.A);
 motor RollerAndBtmIntake = motor(PORT3, ratio18_1, true);
 motor UpperIntake = motor(PORT4, ratio18_1, false);
+digital_out BigNut = digital_out(Brain.ThreeWirePort.B);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable

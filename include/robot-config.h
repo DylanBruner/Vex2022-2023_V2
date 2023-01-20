@@ -8,6 +8,7 @@ extern motor_group Flywheel;
 extern digital_out LittleNut;
 extern motor RollerAndBtmIntake;
 extern motor UpperIntake;
+extern digital_out BigNut;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
