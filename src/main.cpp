@@ -10,15 +10,8 @@
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
      
-/*----------------------------------------------------------------------------*/
-/*                                                                            */
-/*    Module:       main.cpp                                                  */
-/*    Author:       Dylan Bruner                                              */
-/*    Created:      Sun Dec 04 2022                                           */
-/*    Description:  V5 project                                                */
-/*                                                                            */
-/*----------------------------------------------------------------------------*/
-
+#include "sys/_stdint.h"
+#include "v5_apitypes.h"
 #include "vex.h"
 #include <sys/types.h>
 
@@ -27,7 +20,7 @@ using namespace vex;
 bool flywheelOn = false;
 bool tableMode  = false;
 
-int flywheelVoltage = 12;
+int flywheelVoltage = 7;
 MotorPid flywheelPid;
 
 //Quick and ugly cause i dont know how lambda works
@@ -68,6 +61,7 @@ void displayControllerStuff(){
     // Display voltage
     Controller1.Screen.print("Voltage: ");
     Controller1.Screen.print(flywheelVoltage);
+    Controller1.Screen.print("   ");// Clear chars to prevent things like: 7=70
     Controller1.Screen.setCursor(2, 1);
     Controller1.Screen.print("Flywheel: ");
     // Controller1.Screen.print((int) flywheelPid.currentVoltage);
@@ -79,33 +73,35 @@ void getRoller(){
 
   // Get the roller
   UpperIntake.setVelocity(100, percent);
-  drive(-0.20);
+  drive(-0.17);
   UpperIntake.spinFor(-75, deg);
 }
 
 void shootFromMiddle(){
   getRoller();
-  
-  Flywheel.spin(forward, 6.95, volt); // Spin up early
+  Flywheel.spin(forward, 9, volt); // Spin up early
   
   // Drive to middle
-  drive(0.2);
-  turn(-57);
-  drive(3);
+  drive(0.25, 70);
+  turn(-59, 70);
+  drive(3.05, 70);
 
 
   // Align with goal
-  turn(102);
+  turn(55, 70);
 
   //Shoot disks
-  UpperIntake.setVelocity(30, percent);
-  RollerAndBtmIntake.setVelocity(30, percent);
+  UpperIntake.setVelocity(40, percent);
+  RollerAndBtmIntake.setVelocity(40, percent);
 
   RollerAndBtmIntake.spin(forward);
   UpperIntake.spin(forward);
 
-  wait(3, sec);
-  Flywheel.spin(forward, 7.5, volt);
+  wait(5, sec);
+  Flywheel.stop();
+  UpperIntake.stop();
+  RollerAndBtmIntake.stop();
+  // Flywheel.spin(forward, 7.5, volt);  
 }
 
 void shootFromRoller(){
@@ -124,22 +120,27 @@ void shootFromRoller(){
   RollerAndBtmIntake.spin(forward);
 }
 
-void soloWinpoint(){
-  getRoller();
-  shootFromMiddle();
 
+void soloWinpoint(){
+  shootFromMiddle(); // Has getRoller()
+  
   // Get the far roller
+  turn(-60, 70);
+  drive(2.45, 70);
+
+  // arcLeft(1, 90, 70);
 }
 
 void rollerLowGoal(){
   getRoller();
   drive(0.2);
+  Flywheel.spin(forward, 5.2, volt);
   turn(-95);
   drive(2.35);
 
-  Flywheel.spin(forward, 5, volt);
-  UpperIntake.spin(forward, 100, percent);
-  RollerAndBtmIntake.spin(forward, 100, percent);
+  wait(2.2, seconds);
+  UpperIntake.spin(forward, 40, percent);
+  RollerAndBtmIntake.spin(forward, 40, percent);
 
   wait(5, sec);
 
@@ -154,16 +155,23 @@ void skillsAuton(){
   UpperIntake.setVelocity(100, percent);
   UpperIntake.spinFor(-125, deg);
 
+  drive(0.185);
+  turn(45);
+
   // Get the second roller
   drive(0.97, 75);
-  turn(-102, 75);
-  drive(-0.90, 75);
+  turn(-135, 75);
+  drive(-0.49, 75);
   UpperIntake.spinFor(-115, deg);
 
   // Shoot our two preloads
   drive(0.5, 75);
-  Flywheel.spin(forward, 6.2, volt);
-  turn(96);
+  // Flywheel.spin(forward, 6.2, volt);
+  turn(60);
+
+  // return; // For testing right now...
+  LittleNut.set(true); // Nut all over the field
+  return;
   drive(2.15, 75);
 
   turn(24, 75); // Align with goal
@@ -176,18 +184,25 @@ void skillsAuton(){
   // Drive to the other rollers
   turn(-115, 75);
   drive(3.7, 75);
-  turn(-110, 75);
+  // turn(-110, 75);
+
+  // Endgame
+  turn(-145, 75);
+
+  LittleNut.set(true); // Do the endgame
+  wait(7, seconds);
+  drive(-100);
 
   // Get da rollers
-  drive(-1.59, 75);
-  UpperIntake.setVelocity(100, percent);
-  UpperIntake.spinFor(-115, deg);
+  // drive(-1.59, 75);
+  // UpperIntake.setVelocity(100, percent);
+  // UpperIntake.spinFor(-115, deg);
 
-  // Get da third roller
-  drive(0.75, 75);
-  turn(-90, 75);
-  drive(-0.45);
-  UpperIntake.spinFor(-115, deg);
+  // // Get da third roller
+  // drive(0.75, 75);
+  // turn(-90, 75);
+  // drive(-0.45); 
+  // UpperIntake.spinFor(-115, deg);
 }
 
 void driver(){
@@ -278,13 +293,14 @@ void driver(){
         && Controller1.ButtonUp.pressing() && Controller1.ButtonDown.pressing()
         && Controller1.ButtonLeft.pressing() && Controller1.ButtonRight.pressing()){
       LittleNut.set(true);
-      BigNut.set(true);
+      wait(500, msec);
+      LittleNut.set(false);
     }
 
     // Display ========================================================
     double execTime = Brain.timer(msec) - startTime;
     // Display exec time on brain
-    if (Brain.Timer.time() % 5 == 0){
+    if (Brain.Timer.time() % 5 == 0 && false){
       // Brain.Screen.clearLine(1);
       Brain.Screen.clearScreen();
       Brain.Screen.setCursor(1, 1);
@@ -316,14 +332,31 @@ int main() {
   initDrive();
 
   //Main =========================================
-  setBrakeMode(hold);
+  setBrakeMode(brake);
+
+  Flywheel.setStopping(coast);
 
   LittleNut.set(false);
-  BigNut.set(false);
+
 
   // competition comp;
   // comp.drivercontrol(driver);
-  // comp.autonomous(skillsAuton);
+  // comp.autonomous(rollerLowGoal);
+
+  while (true){
+    drive(1, 70);
+    wait(500, msec);
+    drive(-1, 70);
+    wait(500, msec);
+  }
+
+  if (Flywheel.temperature(percent) > 50){
+    printf("Warning: Flywheel is too hot! (%f)", Flywheel.temperature(percent));
+  }
+
+  soloWinpoint();
+
+  // skillsAuton();
 
   // if (!comp.isCompetitionSwitch()){
   //   tableMode = true;
@@ -331,5 +364,5 @@ int main() {
 
   // driver();
 
-  skillsAuton();
+  // skillsAuton();
 }

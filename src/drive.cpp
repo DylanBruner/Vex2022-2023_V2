@@ -1,4 +1,5 @@
 #include "vex.h"
+#include "vex_imu.h"
 using namespace vex;
 
 //https://github.com/Marsgate/Greenhat2
@@ -14,11 +15,12 @@ const int right_rear  = PORT6;
 gearSetting gear_ratio = ratio18_1;
 
 //gyro port (set to 0 if not using)
-const int gyro_port = 0;
+const int gyro_port = 9;
+inertial inert = inertial(PORT9);
 
 //distance constants
-const int distance_constant = 680; //ticks per tile
-const double degree_constant = 2.75; //ticks per degree
+const int distance_constant = 685; //ticks per tile
+const double degree_constant = 1.3;//2.75; //ticks per degree
 
 /**************************************************/
 //advanced tuning (PID and slew)
@@ -30,10 +32,10 @@ const int arc_step = 2; // acceleration for arcs
 
 //straight driving constants
 const double driveKP = .3;
-const double driveKD = .5;
+const double driveKD = .5; // default was .5, seems to help with preventing turning when driving straight
 
 //turning constants
-const double turnKP = .8;
+const double turnKP = .8; // Default 0.8
 const double turnKD = 3;
 
 //arc constants
@@ -340,7 +342,10 @@ int driveTask(){
     //read sensors
     int sv = drivePos();
     if(gyro_port != 0 && driveMode == -1){
-      sv = -iSens.rotation(deg);
+      // sv = -iSens.rotation(deg);
+      sv = inert.rotation(deg);
+      //print out sv
+      // printf("sv: %d", sv);
     }
 
     //speed
@@ -365,10 +370,13 @@ int driveTask(){
 
 void initDrive(){
   task drive_task(driveTask);
-  if(gyro_port != 0){
-    iSens.calibrate();
-    while(iSens.isCalibrating()) delay(20);
-  }
+  // if(gyro_port != 0){
+  //   iSens.calibrate();
+  //   while(iSens.isCalibrating()) delay(20);
+  // }
+
+  inert.calibrate();
+  while(inert.isCalibrating()) delay(20);
 }
 
 /**************************************************/
