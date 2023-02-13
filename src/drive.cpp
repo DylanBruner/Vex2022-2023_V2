@@ -1,3 +1,4 @@
+#include "math.h"
 #include "vex.h"
 #include "vex_imu.h"
 using namespace vex;
@@ -20,7 +21,14 @@ inertial inert = inertial(PORT9);
 
 //distance constants
 const int distance_constant = 685; //ticks per tile
-const double degree_constant = 1.3;//2.75; //ticks per degree
+const double degree_constant = 2.76;//2.75; //ticks per degree
+
+// I hate this...
+// const double left_modifier  = 1.15;
+// const double right_modifier = 1.0;
+
+double targetRotation = 0;
+bool isTurning        = false;
 
 /**************************************************/
 //advanced tuning (PID and slew)
@@ -62,6 +70,14 @@ motor_group leftMotors = {left1, left2};
 motor_group rightMotors = {right1, right2};
 
 /**************************************************/
+void updateRotation(){
+  targetRotation = inert.rotation(deg);
+}
+
+void calibrateInertial(){
+  inert.calibrate();
+}
+
 //task::sleep shorthand
 void delay(int sleepTime){
   task::sleep(sleepTime);
@@ -175,15 +191,18 @@ void turnAsync(double sp, int max){
 }
 
 void drive(double sp, int max){
+  targetRotation = inert.rotation();
   driveAsync(sp, max);
   delay(450);
   waitUntilSettled();
 }
 
 void turn(double sp, int max){
+  isTurning = true;
   turnAsync(sp, max);
   delay(450);
   waitUntilSettled();
+  isTurning = false;
 }
 
 void fastDrive(double sp, int max){
@@ -341,12 +360,12 @@ int driveTask(){
 
     //read sensors
     int sv = drivePos();
-    if(gyro_port != 0 && driveMode == -1){
-      // sv = -iSens.rotation(deg);
-      sv = inert.rotation(deg);
-      //print out sv
-      // printf("sv: %d", sv);
-    }
+    // if(gyro_port != 0 && driveMode == -1){
+    //   // sv = -iSens.rotation(deg);
+    //   sv = -inert.rotation(deg);
+    //   //print out sv
+    //   // printf("sv: %d", sv);
+    // }
 
     //speed
     int error = sp-sv;
@@ -360,23 +379,33 @@ int driveTask(){
     if(speed < -maxSpeed)
       speed = -maxSpeed;
 
+    double error_left  = inert.rotation(deg) - targetRotation;
+    double error_right = -inert.rotation(deg) - targetRotation;
     speed = slew(speed); //slew
+    if ((driveMode != -1 && !isTurning) && (fabs(error_left) > 1 || fabs(error_right) > 1) && (abs(error) > 20)){
+      // use inertial to correct turning
+      double l_speed = speed + error_left * 0.1;
+      double r_speed = speed + error_right * 0.1;
 
-    //set motors
-    left_drive(speed*driveMode);
-    right_drive(speed);
+      left_drive(l_speed);
+      right_drive(r_speed);
+
+    } else {
+      left_drive(speed*driveMode);
+      right_drive(speed);
+    }
   }
 }
 
 void initDrive(){
   task drive_task(driveTask);
-  // if(gyro_port != 0){
-  //   iSens.calibrate();
-  //   while(iSens.isCalibrating()) delay(20);
-  // }
+  if(gyro_port != 0){
+    iSens.calibrate();
+    while(iSens.isCalibrating()) delay(20);
+  }
 
-  inert.calibrate();
-  while(inert.isCalibrating()) delay(20);
+  // inert.calibrate();
+  // while(inert.isCalibrating()) delay(20);
 }
 
 /**************************************************/

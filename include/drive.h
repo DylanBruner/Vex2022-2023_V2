@@ -1,6 +1,10 @@
 using namespace vex;
 
 
+
+void updateRotation();
+
+void calibrateInertial();
 /**
  * Short hand for vex::task::sleep
  */

@@ -74,21 +74,21 @@ void getRoller(){
   // Get the roller
   UpperIntake.setVelocity(100, percent);
   drive(-0.17);
-  UpperIntake.spinFor(-75, deg);
+  UpperIntake.spinFor(-90, deg, true);
+  wait(0.5, sec);
 }
 
 void shootFromMiddle(){
   getRoller();
-  Flywheel.spin(forward, 9, volt); // Spin up early
+  // Flywheel.spin(forward, 9, volt); // Spin up early
   
   // Drive to middle
   drive(0.25, 70);
-  turn(-59, 70);
+  turn(-72, 70);
   drive(3.05, 70);
 
-
   // Align with goal
-  turn(55, 70);
+  turn(57, 70);
 
   //Shoot disks
   UpperIntake.setVelocity(40, percent);
@@ -127,16 +127,14 @@ void soloWinpoint(){
   // Get the far roller
   turn(-60, 70);
   drive(2.45, 70);
-
-  // arcLeft(1, 90, 70);
 }
 
 void rollerLowGoal(){
   getRoller();
   drive(0.2);
   Flywheel.spin(forward, 5.2, volt);
-  turn(-95);
-  drive(2.35);
+  turn(-90);
+  drive(2.20);
 
   wait(2.2, seconds);
   UpperIntake.spin(forward, 40, percent);
@@ -149,49 +147,49 @@ void rollerLowGoal(){
   Flywheel.stop();
 }
 
-void skillsAuton(){
-  // Get the first roller
-  drive(-0.18, 75);
-  UpperIntake.setVelocity(100, percent);
-  UpperIntake.spinFor(-125, deg);
+void skillsAutonV1(){
+  // // Get the first roller
+  // drive(-0.18, 75);
+  // UpperIntake.setVelocity(100, percent);
+  // UpperIntake.spinFor(-125, deg);
 
-  drive(0.185);
-  turn(45);
+  // drive(0.185);
+  // turn(45);
 
-  // Get the second roller
-  drive(0.97, 75);
-  turn(-135, 75);
-  drive(-0.49, 75);
-  UpperIntake.spinFor(-115, deg);
+  // // Get the second roller
+  // drive(0.97, 75);
+  // turn(-135, 75);
+  // drive(-0.49, 75);
+  // UpperIntake.spinFor(-115, deg);
 
-  // Shoot our two preloads
-  drive(0.5, 75);
-  // Flywheel.spin(forward, 6.2, volt);
-  turn(60);
+  // // Shoot our two preloads
+  // drive(0.5, 75);
+  // // Flywheel.spin(forward, 6.2, volt);
+  // turn(60);
 
-  // return; // For testing right now...
-  LittleNut.set(true); // Nut all over the field
-  return;
-  drive(2.15, 75);
+  // // return; // For testing right now...
+  // LittleNut.set(true); // Nut all over the field
+  // return;
+  // drive(2.15, 75);
 
-  turn(24, 75); // Align with goal
-  RollerAndBtmIntake.spin(forward, 25, percent);
-  UpperIntake.spin(forward, 25, percent);
+  // turn(24, 75); // Align with goal
+  // RollerAndBtmIntake.spin(forward, 25, percent);
+  // UpperIntake.spin(forward, 25, percent);
 
-  wait(10, seconds);
-  UpperIntake.stop(); RollerAndBtmIntake.stop(); Flywheel.stop();
+  // wait(10, seconds);
+  // UpperIntake.stop(); RollerAndBtmIntake.stop(); Flywheel.stop();
 
-  // Drive to the other rollers
-  turn(-115, 75);
-  drive(3.7, 75);
-  // turn(-110, 75);
+  // // Drive to the other rollers
+  // turn(-115, 75);
+  // drive(3.7, 75);
+  // // turn(-110, 75);
 
-  // Endgame
-  turn(-145, 75);
+  // // Endgame
+  // turn(-145, 75);
 
-  LittleNut.set(true); // Do the endgame
-  wait(7, seconds);
-  drive(-100);
+  // LittleNut.set(true); // Do the endgame
+  // wait(7, seconds);
+  // drive(-100);
 
   // Get da rollers
   // drive(-1.59, 75);
@@ -203,6 +201,71 @@ void skillsAuton(){
   // turn(-90, 75);
   // drive(-0.45); 
   // UpperIntake.spinFor(-115, deg);
+}
+
+void safeDrive(double distance){driveAsync(distance);}
+void safeDrive(double distance, double speed){driveAsync(distance, speed);}
+void safeDrive(double distance, double speed, double timeout){driveAsync(distance, speed); wait(timeout, msec);}
+
+void slamRamAss(){
+  driveAsync(-0.5, 75); // Thrust forward
+  wait(1, sec);
+  driveAsync(0.1, 75); // Pull out
+}
+
+void skillsAuton(){
+  UpperIntake.setVelocity(100, percent);
+  // safeDrive(-0.175);
+  slamRamAss();
+  UpperIntake.spinFor(-120, deg, false);
+  wait(2, sec);
+  
+  // Drive backwards to get the second roller
+  // drive(0.225, 70);
+  safeDrive(0.215, 50, 1000);
+  turn(40, 70);
+  drive(0.70);
+  turn(-125, 70);
+
+  drive(-0.60); //Drive up to the second roller
+  // calibrate_inertial();
+  // turn(0.01);
+  slamRamAss();
+  UpperIntake.spinFor(155, deg, false);
+  wait(1, seconds);
+
+  // Drive and get the second rollers
+  drive(0.65);
+  
+  // turn(246, 70); // Align with diagonal line
+  turn(70, 70);
+
+  wait(1, sec);
+  calibrateInertial();
+  updateRotation();
+
+  wait(1, sec); LittleNut.set(true);
+  return;
+  drive(-5.52, 70);
+  turn(57);
+
+  // Get the third roller
+  // safeDrive(-0.41, 70, 1000);
+  slamRamAss();
+  UpperIntake.spinFor(-125, deg, true);
+  wait(0.5, sec);
+
+  drive(0.8);
+  turn(-97);
+  drive(-0.45);
+  slamRamAss();
+  UpperIntake.spinFor(-125, deg, false);
+  wait(1, sec);
+  
+  // End game
+  drive(0.5);
+  turn(60);
+  LittleNut.set(true);
 }
 
 void driver(){
@@ -222,6 +285,11 @@ void driver(){
   while (true){
     long startTime = Brain.timer(msec);
     if (!tableMode){
+      // double r = Controller1.Axis2.position();
+      // if (fabs(r) >= 75){
+      //   r = r * 0.85;
+      // }
+      // tank(Controller1.Axis3.position()*1.0, r);
       tank(Controller1.Axis3.position(), Controller1.Axis2.position());
       // Print flywheel voltage
       Controller1.Screen.setCursor(1, 1);
@@ -236,6 +304,8 @@ void driver(){
       rollerLowGoal();
       wait(1, seconds);
     }
+
+    // displayControllerStuff();
 
     // flywheelPid.targetRpm = flywheelRPM;
 
@@ -338,25 +408,24 @@ int main() {
 
   LittleNut.set(false);
 
+  competition comp;
+  comp.drivercontrol(driver);
+  comp.autonomous(rollerLowGoal);
 
-  // competition comp;
-  // comp.drivercontrol(driver);
-  // comp.autonomous(rollerLowGoal);
-
-  while (true){
-    drive(1, 70);
-    wait(500, msec);
-    drive(-1, 70);
-    wait(500, msec);
-  }
+  // driver();
 
   if (Flywheel.temperature(percent) > 50){
     printf("Warning: Flywheel is too hot! (%f)", Flywheel.temperature(percent));
   }
 
-  soloWinpoint();
+  // turn(360);
 
-  // skillsAuton();
+  // while (true){
+  //   drive(5);
+  //   wait(1, seconds);
+  //   drive(-5);
+  //   wait(1, seconds);
+  // }
 
   // if (!comp.isCompetitionSwitch()){
   //   tableMode = true;
