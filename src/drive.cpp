@@ -28,6 +28,8 @@ const double degree_constant = 2.76;//2.75; //ticks per degree
 // const double right_modifier = 1.0;
 
 double targetRotation = 0;
+double start_encoder_left  = 0;
+double start_encoder_right = 0;
 bool isTurning        = false;
 
 /**************************************************/
@@ -191,7 +193,10 @@ void turnAsync(double sp, int max){
 }
 
 void drive(double sp, int max){
-  targetRotation = inert.rotation();
+  targetRotation      = inert.rotation();
+  start_encoder_left  = left1.rotation(deg);
+  start_encoder_right = right1.rotation(deg);
+
   driveAsync(sp, max);
   delay(450);
   waitUntilSettled();
@@ -379,13 +384,27 @@ int driveTask(){
     if(speed < -maxSpeed)
       speed = -maxSpeed;
 
-    double error_left  = inert.rotation(deg) - targetRotation;
-    double error_right = -inert.rotation(deg) - targetRotation;
+
+    double inert_error_left  = inert.rotation(deg) - targetRotation;
+    double inert_error_right = -inert.rotation(deg) - targetRotation;
     speed = slew(speed); //slew
-    if ((driveMode != -1 && !isTurning) && (fabs(error_left) > 1 || fabs(error_right) > 1) && (abs(error) > 20)){
+
+    // Drive straight because jayson isn't
+    if ((driveMode != -1 && !isTurning) && (fabs(inert_error_left) > 1 || fabs(inert_error_right) > 1) && (abs(error) > 20)){
       // use inertial to correct turning
-      double l_speed = speed + error_left * 0.1;
-      double r_speed = speed + error_right * 0.1;
+      double l_speed = speed + inert_error_left * 0.1;
+      double r_speed = speed + inert_error_right * 0.1;
+
+      double encoder_difference = fabs(start_encoder_left - left1.rotation(deg)) - fabs(start_encoder_right - right1.rotation(deg));
+      // if the encoders are not equal, slow down the motor that is going faster
+      if (fabs(encoder_difference) > 10){
+        printf("encoder difference: %f\n", encoder_difference);
+        if (encoder_difference > 0){
+          l_speed = l_speed * 0.5;
+        } else {
+          r_speed = r_speed * 0.5;
+        }
+      }
 
       left_drive(l_speed);
       right_drive(r_speed);
@@ -410,8 +429,73 @@ void initDrive(){
 
 /**************************************************/
 //operator control
+double l_pos = 0; double r_pos = 0;
+bool holdStarted = false;
+
+void betterHold(){
+  // We don't want holding to kick in untill were basically standstill
+  double overall_speed = abs(Controller1.Axis3.position()) + abs(Controller1.Axis2.position()) +
+                         leftMotors.velocity(percent) + rightMotors.velocity(percent);
+  
+  double controller_speed = abs(Controller1.Axis3.position() + abs(Controller1.Axis2.position()));
+
+  if (controller_speed > 2 && holdStarted){
+    holdStarted = false;
+  }
+
+  if (overall_speed < 10){
+    // Accounting for a little drift
+    if (!holdStarted){
+      holdStarted = true;
+      l_pos = leftMotors.position(deg);
+      r_pos = rightMotors.position(deg);
+    }
+
+    double l_error = l_pos - leftMotors.position(deg);
+    double r_error = r_pos - rightMotors.position(deg);
+
+    rightMotors.setVelocity(100, percent);
+    leftMotors.setVelocity(100, percent);
+
+    leftMotors.spinFor(l_error, deg);
+    rightMotors.spinFor(r_error, deg);
+  } else {
+    holdStarted = false;
+  }
+}
+
+double currentMode    = 0;
+double lastChangeTime = 0;
+
 void tank(int left, int right){
   driveMode = 0; //turns off autonomous tasks
+
+  // Attempt to stop the robot from jerking..
+  // When at higher speeds we coast and when standing still hold
+  if ((int) Brain.Timer.time(msec) % 5 == 0 && currentMode == 2){
+    betterHold();
+  }
+  
+  if (Brain.Timer.time(msec) - lastChangeTime > 500){
+    lastChangeTime = Brain.Timer.time(msec);
+   
+    if (((fabs(leftMotors.velocity(percent)) > 20 || 
+        fabs(rightMotors.velocity(percent)) > 20)) && currentMode != 1){
+      currentMode = 1;
+      rightMotors.setStopping(coast);
+      leftMotors.setStopping(coast);
+    } else if (currentMode != 2) {
+      currentMode = 2;
+      // rightMotors.setStopping(hold);
+      // leftMotors.setStopping(hold);
+      setBrakeMode(hold);
+    }
+  }
+
+  // if (currentMode == 2){
+  //   betterHold();
+  // }
+
   left_drive(left);
   right_drive(right);
 }

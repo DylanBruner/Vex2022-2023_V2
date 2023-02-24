@@ -5,9 +5,11 @@ extern brain Brain;
 // VEXcode devices
 extern controller Controller1;
 extern motor_group Flywheel;
-extern digital_out LittleNut;
+extern digital_out EndGame;
 extern motor RollerAndBtmIntake;
 extern motor UpperIntake;
+extern digital_in DiskShootDetector;
+extern digital_out EndgameBlocker;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

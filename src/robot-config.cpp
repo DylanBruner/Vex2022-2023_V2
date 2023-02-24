@@ -12,9 +12,11 @@ controller Controller1 = controller(primary);
 motor FlywheelMotorA = motor(PORT1, ratio6_1, true);
 motor FlywheelMotorB = motor(PORT2, ratio6_1, false);
 motor_group Flywheel = motor_group(FlywheelMotorA, FlywheelMotorB);
-digital_out LittleNut = digital_out(Brain.ThreeWirePort.H);
+digital_out EndGame = digital_out(Brain.ThreeWirePort.G);
 motor RollerAndBtmIntake = motor(PORT3, ratio18_1, true);
 motor UpperIntake = motor(PORT4, ratio18_1, false);
+digital_in DiskShootDetector = digital_in(Brain.ThreeWirePort.F);
+digital_out EndgameBlocker = digital_out(Brain.ThreeWirePort.H);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable

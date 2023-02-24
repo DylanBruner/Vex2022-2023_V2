@@ -23,6 +23,8 @@
 #include "drivercontrol.h"
 #include "odometry.h"
 #include "motorpidd.h"
+#include "autonselector.h"
+#include "buttonmanager.h"
 
 #define waitUntil(condition)                                                   \
   do {                                                                         \
