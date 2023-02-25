@@ -24,6 +24,13 @@ double defaultFlywheelVoltage = 7;
 double flywheelVoltage        = defaultFlywheelVoltage;
 int flywheelModifier          = 0;
 
+void slamRamAss(){
+  driveAsync(-0.5, 75); // Thrust forward
+  wait(1, sec);
+  driveAsync(0.2, 75); // Pull out
+  wait(1, sec);
+}
+
 void getRoller(){
   UpperIntake.setVelocity(100, percent);
   drive(-0.17);
@@ -81,18 +88,20 @@ void soloWinpoint(){
   drive(2.45, 70);
 }
 
-void rollerLowGoal(){
+void rollerLowGoalClose(){
+  // getRoller();
+  slamRamAss();
   getRoller();
-  drive(0.2);
+  drive(0.24);
   flywheelVoltage = 5.2;
   flywheelOn = true;
   // Flywheel.spin(forward, 5.2, volt);
   turn(-90);
-  drive(2.20);
+  drive(2.2);
 
   wait(2.2, seconds);
-  UpperIntake.spin(forward, 40, percent);
-  RollerAndBtmIntake.spin(forward, 40, percent);
+  UpperIntake.spin(forward, 100, percent);
+  RollerAndBtmIntake.spin(forward, 100, percent);
 
   wait(5, sec);
 
@@ -102,33 +111,61 @@ void rollerLowGoal(){
   flywheelOn = false;
 }
 
+void rollerLowGoalFar(){
+  flywheelOn = true; flywheelVoltage = 6.4;
+
+  drive(0.28, 70);
+  turn(105, 70);
+  // shoot here i think
+  UpperIntake.spin(forward, 12.0, volt);
+  RollerAndBtmIntake.spin(forward, 12.0, volt);
+  wait(5, sec);
+  flywheelOn = false;
+  UpperIntake.stop(); RollerAndBtmIntake.stop();
+
+  drive(-0.70, 70);
+  turn(-74, 70);
+  // drive(-0.05, 70);
+  // turn(-36, 70);
+  slamRamAss();
+  getRoller();
+}
+
+void driveForwardForAuton(){drive(1.0);}
+void driveBackwardForAuton(){drive(-1.0);}
+
 void safeDrive(double distance){driveAsync(distance);}
 void safeDrive(double distance, double speed){driveAsync(distance, speed);}
 void safeDrive(double distance, double speed, double timeout){driveAsync(distance, speed); wait(timeout, msec);}
 
-void slamRamAss(){
-  driveAsync(-0.5, 75); // Thrust forward
-  wait(1, sec);
-  driveAsync(0.1, 75); // Pull out
-}
-
 void skillsAuton(){
+  flywheelVoltage = 12; flywheelOn = true;
   UpperIntake.setVelocity(100, percent);
   // safeDrive(-0.175);
   slamRamAss();
-  UpperIntake.spinFor(-120, deg, false);
-  wait(2, sec);
+  getRoller();
+  // UpperIntake.spinFor(-120, deg, false);
   
   // Drive backwards to get the second roller
   // drive(0.225, 70);
   safeDrive(0.215, 50, 1000);
-  turn(40, 70);
+  // go for high goal disks
+  turn(-100);
+  UpperIntake.spin(forward, 10.0, volt);
+  RollerAndBtmIntake.spin(forward, 10.0, volt);
+
+  wait(8, sec);
+  flywheelOn = false;
+  UpperIntake.stop(); RollerAndBtmIntake.stop();
+
+  turn(125, 70);
   drive(0.70);
   turn(-125, 70);
 
   drive(-0.60); //Drive up to the second roller
   slamRamAss();
-  UpperIntake.spinFor(155, deg, false);
+  getRoller();
+  // UpperIntake.spinFor(155, deg, false);
   wait(1, seconds);
 
   // Drive and get the second rollers
@@ -270,7 +307,7 @@ int main() {
   vexcodeInit();
   initDrive();
 
-  task flywheelTask(flywheel_task); // I guess we dont actually have to start it?
+  task flywheelTask(flywheel_task);
 
   //Main =========================================
 
@@ -278,15 +315,24 @@ int main() {
 
   EndGame.set(false);
   EndgameBlocker.set(false);
+  //7, 8, 5, 6
+  if (motor(7).temperature() > 60 || motor(8).temperature() > 60 || 
+      motor(5).temperature() > 60 || motor(6).temperature() > 60 ||
+      Flywheel.temperature() > 60 || UpperIntake.temperature() > 60 ||
+      RollerAndBtmIntake.temperature() > 60){
+    Controller1.rumble(".......");
+  }
 
   competition comp;
   comp.drivercontrol(driver);
 
   AutonSelector selector = AutonSelector(&Controller1);
   selector.addAuton("Driver", driver);
-  selector.addAuton("Low Goal", rollerLowGoal);
+  selector.addAuton("Low Close", rollerLowGoalClose);
+  selector.addAuton("Low Far", rollerLowGoalFar);
   selector.addAuton("Skills", skillsAuton);
-  selector.addAuton("WP", soloWinpoint);
+  selector.addAuton("Drive Forwards", driveForwardForAuton);
+  selector.addAuton("Drive Backwards", driveBackwardForAuton);
 
   comp.autonomous(selector.runMenu());
 }

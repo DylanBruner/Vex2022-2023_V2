@@ -1,9 +1,13 @@
 using namespace vex;
 
-
+void left_drive(int vel);
+void right_drive(int vel);
 
 void updateRotation();
-
+void spinLeft(int amount);
+void spinRight(int amount);
+void disablePid();
+void enablePid();
 void calibrateInertial();
 /**
  * Short hand for vex::task::sleep

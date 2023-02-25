@@ -15,6 +15,8 @@ const int right_front = PORT5;
 const int right_rear  = PORT6;
 gearSetting gear_ratio = ratio18_1;
 
+
+bool noPid = false;
 //gyro port (set to 0 if not using)
 const int gyro_port = 9;
 inertial inert = inertial(PORT9);
@@ -72,6 +74,11 @@ motor_group leftMotors = {left1, left2};
 motor_group rightMotors = {right1, right2};
 
 /**************************************************/
+void spinLeft(int amount){leftMotors.spinFor(amount, deg);}
+void spinRight(int amount){rightMotors.spinFor(amount, deg, true);}
+void disablePid(){noPid = true;}
+void enablePid(){noPid = false;}
+
 void updateRotation(){
   targetRotation = inert.rotation(deg);
 }
@@ -350,6 +357,7 @@ int driveTask(){
 
   while(1){
     delay(20);
+    if (noPid) continue;
 
     if(driveMode == 1){
       sp = driveTarget;
@@ -397,12 +405,12 @@ int driveTask(){
 
       double encoder_difference = fabs(start_encoder_left - left1.rotation(deg)) - fabs(start_encoder_right - right1.rotation(deg));
       // if the encoders are not equal, slow down the motor that is going faster
-      if (fabs(encoder_difference) > 10){
-        printf("encoder difference: %f\n", encoder_difference);
+      if (fabs(encoder_difference) > 10 && false){//Disable this shit for now
+        // printf("encoder difference: %f\n", encoder_difference);
         if (encoder_difference > 0){
-          l_speed = l_speed * 0.5;
+          l_speed = l_speed * 0.6;
         } else {
-          r_speed = r_speed * 0.5;
+          r_speed = r_speed * 0.6;
         }
       }
 
